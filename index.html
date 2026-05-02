@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>文字ルーレット</title>
+<title>ボーナスルーレット</title>
+
 <style>
 body {
   text-align: center;
@@ -58,8 +59,51 @@ button {
   font-size: 20px;
   font-weight: bold;
 }
+
+/* 履歴 */
+#history {
+  margin-top: 10px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+.history-item {
+  background: #222;
+  padding: 8px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* 📱スマホ対応 */
+@media (max-width: 600px) {
+  .slot {
+    width: 100px;
+    height: 60px;
+  }
+
+  .item {
+    height: 60px;
+    font-size: 14px;
+  }
+
+  button {
+    width: 80%;
+    max-width: 300px;
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  textarea {
+    width: 90%;
+    height: 80px;
+  }
+}
 </style>
 </head>
+
 <body>
 
 <h1>🎰 文字ルーレット</h1>
@@ -73,6 +117,11 @@ button {
 
 <button onclick="spin()">スタート</button>
 <div id="result">結果：---</div>
+
+<!-- 履歴 -->
+<h2>履歴</h2>
+<div id="history"></div>
+<button onclick="clearHistory()">履歴クリア</button>
 
 <!-- 入力 -->
 <div style="margin-top:40px;">
@@ -123,7 +172,7 @@ function updateItems() {
   }, 0);
 }
 
-// 保存（ボタン押したときだけ）
+// 保存（手動）
 function saveItems() {
   const data = {
     reel1: document.getElementById("input1").value,
@@ -160,8 +209,36 @@ function clearItems() {
   updateItems();
 }
 
-// 起動時読み込み
-window.onload = loadItems;
+// ===== 履歴 =====
+function addHistory(text) {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+
+  history.unshift(text);
+  if (history.length > 20) history.pop();
+
+  localStorage.setItem("history", JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem("history")) || [];
+  const el = document.getElementById("history");
+
+  el.innerHTML = history.map(item =>
+    `<div class="history-item">${item}</div>`
+  ).join("");
+}
+
+function clearHistory() {
+  localStorage.removeItem("history");
+  renderHistory();
+}
+
+// 起動時
+window.onload = () => {
+  loadItems();
+  renderHistory();
+};
 
 // リール生成
 function createReel(reel, items) {
@@ -218,8 +295,11 @@ function spin() {
 
           if (index === 2) {
             setTimeout(() => {
+              const resultText = results.join(" / ");
               document.getElementById("result").textContent =
-                "結果：" + results.join(" / ");
+                "結果：" + resultText;
+
+              addHistory(resultText); // ★履歴追加
               spinning = false;
             }, 300);
           }
