@@ -50,11 +50,13 @@ textarea {
 button {
   margin: 10px;
   padding: 10px 20px;
+  cursor: pointer;
 }
 
 #result {
   margin-top: 20px;
   font-size: 20px;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -121,39 +123,40 @@ function updateItems() {
   }, 0);
 }
 
-// 保存
+// 保存（ボタン押したときだけ）
 function saveItems() {
-  const input1 = document.getElementById("input1");
-  const input2 = document.getElementById("input2");
-  const input3 = document.getElementById("input3");
+  const data = {
+    reel1: document.getElementById("input1").value,
+    reel2: document.getElementById("input2").value,
+    reel3: document.getElementById("input3").value
+  };
 
-  localStorage.setItem("reel1", input1.value);
-  localStorage.setItem("reel2", input2.value);
-  localStorage.setItem("reel3", input3.value);
+  localStorage.setItem("slotData", JSON.stringify(data));
+  alert("保存しました");
 
   updateItems();
-  alert("保存しました");
 }
 
-// 読み込み（自動）
+// 読み込み
 function loadItems() {
-  const input1 = document.getElementById("input1");
-  const input2 = document.getElementById("input2");
-  const input3 = document.getElementById("input3");
+  const data = JSON.parse(localStorage.getItem("slotData"));
+  if (!data) return;
 
-  input1.value = localStorage.getItem("reel1") || "";
-  input2.value = localStorage.getItem("reel2") || "";
-  input3.value = localStorage.getItem("reel3") || "";
+  document.getElementById("input1").value = data.reel1 || "";
+  document.getElementById("input2").value = data.reel2 || "";
+  document.getElementById("input3").value = data.reel3 || "";
 
   updateItems();
 }
 
 // リセット
 function clearItems() {
-  localStorage.clear();
+  localStorage.removeItem("slotData");
+
   document.getElementById("input1").value = "";
   document.getElementById("input2").value = "";
   document.getElementById("input3").value = "";
+
   updateItems();
 }
 
@@ -225,11 +228,6 @@ function spin() {
     }, stopTimes[index]);
   });
 }
-
-// ★自動保存（入力したら即保存）
-document.querySelectorAll("textarea").forEach(el => {
-  el.addEventListener("input", saveItems);
-});
 </script>
 
 </body>
